@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galeri Pribadi</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:#0f0f0f;
+color:white;
+min-height:100vh;
+}
+
+.login-page{
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.login-box{
+background:#1a1a1a;
+padding:30px;
+border-radius:20px;
+width:90%;
+max-width:350px;
+text-align:center;
+box-shadow:0 0 20px rgba(255,255,255,0.1);
+}
+
+.login-box h1{
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:12px;
+background:#2a2a2a;
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#4f46e5;
+color:white;
+font-size:16px;
+cursor:pointer;
+margin-top:10px;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+.main{
+display:none;
+padding-bottom:50px;
+}
+
+header{
+padding:20px;
+text-align:center;
+font-size:28px;
+font-weight:bold;
+background:#111;
+position:sticky;
+top:0;
+z-index:100;
+}
+
+.menu{
+padding:15px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.gallery{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:12px;
+padding:15px;
+}
+
+.card{
+background:#1b1b1b;
+border-radius:18px;
+overflow:hidden;
+position:relative;
+}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+display:block;
+}
+
+.delete-btn{
+position:absolute;
+top:10px;
+right:10px;
+background:red;
+width:auto;
+padding:8px 12px;
+font-size:12px;
+}
+
+.album-title{
+padding:10px;
+font-size:14px;
+text-align:center;
+}
+
+.music-box{
+text-align:center;
+padding:10px;
+}
+
+.empty{
+text-align:center;
+margin-top:40px;
+opacity:0.6;
+}
+
+</style>
+</head>
+<body>
+
+<div class="login-page" id="loginPage">
+<div class="login-box">
+<h1>🔒 Login Galeri</h1>
+<input type="password" id="password" placeholder="Masukkan Password">
+<button onclick="login()">Masuk</button>
+</div>
+</div>
+
+<div class="main" id="mainPage">
+
+<header>
+📸 Galeri Pribadi
+</header>
+
+<div class="music-box">
+<audio controls autoplay loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+</audio>
+</div>
+
+<div class="menu">
+<input type="file" id="fileInput" multiple accept="image/*">
+<input type="text" id="albumInput" placeholder="Nama Album">
+<button onclick="savePhotos()">Upload Foto</button>
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="empty" id="emptyText">
+Belum ada foto.
+</div>
+
+</div>
+
+<script>
+
+const PASSWORD = "12345";
+
+function login(){
+const pass = document.getElementById("password").value;
+
+if(pass === PASSWORD){
+document.getElementById("loginPage").style.display = "none";
+document.getElementById("mainPage").style.display = "block";
+loadPhotos();
+}else{
+alert("Password salah!");
+}
+}
+
+function savePhotos(){
+
+const files = document.getElementById("fileInput").files;
+const album = document.getElementById("albumInput").value || "Album";
+
+if(files.length === 0){
+alert("Pilih foto dulu");
+return;
+}
+
+let saved = JSON.parse(localStorage.getItem("photos")) || [];
+
+Array.from(files).forEach(file => {
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+saved.push({
+img:e.target.result,
+album:album
+});
+
+localStorage.setItem("photos", JSON.stringify(saved));
+loadPhotos();
+}
+
+reader.readAsDataURL(file);
+
+});
+}
+
+function loadPhotos(){
+
+const gallery = document.getElementById("gallery");
+const empty = document.getElementById("emptyText");
+
+gallery.innerHTML = "";
+
+let saved = JSON.parse(localStorage.getItem("photos")) || [];
+
+if(saved.length === 0){
+empty.style.display = "block";
+return;
+}else{
+empty.style.display = "none";
+}
+
+saved.forEach((photo,index)=>{
+
+const card = document.createElement("div");
+card.className = "card";
+
+card.innerHTML = `
+<img src="${photo.img}">
+<div class="album-title">📁 ${photo.album}</div>
+<button class="delete-btn" onclick="deletePhoto(${index})">Hapus</button>
+`;
+
+gallery.appendChild(card);
+
+});
+}
+
+function deletePhoto(index){
+
+let saved = JSON.parse(localStorage.getItem("photos")) || [];
+
+saved.splice(index,1);
+
+localStorage.setItem("photos", JSON.stringify(saved));
+
+loadPhotos();
+}
+
+</script>
+
+</body>
+</html>
